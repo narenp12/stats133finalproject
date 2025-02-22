@@ -1,0 +1,33 @@
+---
+title: "Final Proj Data Maker - STATS 133"
+author: "Naren Prakash (305738253)"
+format: pdf
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 60), echo = TRUE, tidy = TRUE)
+
+library(tm)
+library(quanteda)
+library(tidyverse)
+library(tidytext)
+library(stringr)
+library(pdftools)
+library(syuzhet)
+library(textdata)
+library(gutenbergr)
+library(readtext)
+```
+
+```{r}
+files <- list.files("/home/narenprax/Documents/GitHub/stats133finalproject/TMdata",pattern = "pdf$")
+setwd("/home/narenprax/Documents/GitHub/stats133finalproject/TMdata")
+scripts <- lapply(files, pdf_text)
+corp <- Corpus(URISource(files), readerControl = list(reader = readPDF))
+movies <- tidy(corp) %>% select(-c(description))
+```
+
+```{r}
+write_csv(movies, "movies_and_metadata.csv")
+```
+
