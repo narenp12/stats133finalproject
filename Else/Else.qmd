@@ -1,119 +1,59 @@
 ---
-title: Are RomComs Dead?
+title: Are Rom-Coms Dead?
 subtitle: Project Proposal
 author:
-  - name: Alice Anonymous
-    email: alice@example.com
-    affiliations: 
-        - id: some-tech
-          name: Some Institute of Technology
-          department: Department Name
-          address: Street Address
-          city: City
-          state: State
-          postal-code: Postal Code
-    attributes:
-        corresponding: true
-    note: This is the first author footnote.
-  - name: Bob Security
-    email: bob@example.com
+  - name: Naren Prakash
     affiliations:
         - id: another-u
-          name: Another University
-          department: Department Name
-          address: Street Address
-          city: City
-          state: State
-          postal-code: Postal Code
-    note: |
-      Another author footnote, this is a very long footnote and it should be a really long footnote. But this footnote is not yet sufficiently long enough to make two lines of footnote text.
-  - name: Cat Memes
-    email: cat@example.com
+          name: University of California, Los Angeles
+          department: Department of Statistics and Data Science
+          city: Los Angeles
+          state: California
+          postal-code: 90024
+  - name: Fathima Shaikh
     affiliations:
         - ref: another-u
-    note: Yet another author footnote.
-  - name: Derek Zoolander
-    email: derek@example.com
-    affilations:
-        - ref: some-tech
+  - name: Caleb Williams
+    affiliations:
+        - ref: another-u
 abstract: |
-  This is the abstract. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum augue turpis, dictum non malesuada a, volutpat eget velit. Nam placerat turpis purus, eu tristique ex tincidunt et. Mauris sed augue eget turpis ultrices tincidunt. Sed et mi in leo porta egestas. Aliquam non laoreet velit. Nunc quis ex vitae eros aliquet auctor nec ac libero. Duis laoreet sapien eu mi luctus, in bibendum leo molestie. Sed hendrerit diam diam, ac dapibus nisl volutpat vitae. Aliquam bibendum varius libero, eu efficitur justo rutrum at. Sed at tempus elit.
-keywords: 
-  - keyword1
-  - keyword2
+  Romantic comedies, or “rom-coms”, have been claimed to be worse now than before. Is this truly the case? This project will use 30 popular rom-com movie scripts from 1980 to 2020 in an attempt to answer the question: Have romantic comedies declined in quality over time (past 40 years)? The methods employed are lexical diversity, topic modeling, and sentiment analysis. The important features from these methods will help to develop a random forest model that predicts the decade in which each rom-com was published based on the original data and additional engineered features.
 date: last-modified
 bibliography: bibliography.bib
 format:
   elsevier-pdf:
     keep-tex: true
     journal:
-      name: Journal Name
+      name: Introduction to Text Mining Using R
       formatting: preprint
       # model: 3p # Don't set a model with preprint
       cite-style: authoryear
 ---
 
-Please make sure that your manuscript follows the guidelines in the Guide for Authors of the relevant journal. It is not necessary to typeset your manuscript in exactly the same way as an article, unless you are submitting to a camera-ready copy (CRC) journal.
+# Introduction
 
-For detailed instructions regarding the elsevier article class, see <https://www.elsevier.com/authors/policies-and-guidelines/latex-instructions>
+Rom-coms have captivated audiences for decades, becoming a staple in popular cinema. However, in recent years, critics and casual viewers alike have argued that the quality of rom-coms has declined, referencing factors such as weaker storytelling and formulaic plots. Additionally, many claim that recent rom-coms are more predictable and cliche than those from years before. This project explores whether or not rom-coms have indeed declined in quality, using text mining techniques such as sentiment extraction, correlation analysis, and topic modeling to examine transcripts of popular movies since 1980. Through this approach, this paper aims to determine whether the perceived decline in rom-com quality is supported by measurable changes in film content, or if it is simply a result of changing public perceptions such as the effect of nostalgia. 
 
-# Bibliography styles
+# Objective
 
-Here are two sample references: @Feynman1963118 @Dirac1953888.
+This paper seeks to answer whether romantic comedies have declined in quality over time, specifically the last 40 years. Quality will be defined using quantitative metrics.
 
-With this template using elsevier class, natbib will be used. Three bibliographic style ﬁles (\*.bst) are provided and their use controled by `cite-style` option:
 
--   `citestyle: number` (default) will use `elsarticle-num.bst` - can be used for the numbered scheme
--   `citestyle: numbername` will use `elsarticle-num-names.bst` - can be used for numbered with new options of natbib.sty
--   `citestyle: authoryear` will use `elsarticle-harv.bst` — can be used for author year scheme
+# Research Questions
+- Are recent romantic comedies more correlated with each other than those of the past?
+- Have romantic comedy scripts become less complex (in terms of vocabulary)?
+- Can the era of a romantic comedy be easily predicted based on aspects of the script?
 
-This `citestyle` will insert the right `.bst` and set the correct `classoption` for `elsarticle` document class.
+# Methods
 
-Using `natbiboptions` variable in YAML header, you can set more options for `natbib` itself . Example
+The methods used in this project aspire to quantify how rom-coms have changed over time through different metrics. One test of this involves lexical richness and linguistic complexity. This involves using Type-Token Ratio (TTR), which measures the diversity of a script’s vocabulary, and readability scores, which evaluate the ease of comprehension for each script.
 
-``` yaml
-natbiboptions: longnamesfirst,angle,semicolon
-```
+Another type of method used will be sentiment analysis, specifically using lexicons like AFINN, NRC, and Bing to analyze how each script’s tone changes over time. This will help to see if romantic comedies have a more positive or more negative sentiment as well as note similarities in sentiments across time periods.
 
-## Using CSL
+Also, this project will employ Topic Modeling through Latent Dirichlet Allocation (LDA) to find recurring topics in the scripts. LDA will contribute to exploring whether or not rom-com themes have become more formulaic in the past 40 years. 
 
-If `cite-method` is set to `citeproc` in `elsevier_article()`, then pandoc is used for citations instead of `natbib`. In this case, the `csl` option is used to format the references. By default, this template will provide an appropriate style, but alternative `csl` files are available from <https://www.zotero.org/styles?q=elsevier>. These can be downloaded and stored locally, or the url can be used as in the example header.
+Additionally, correlation analysis will be employed to investigate similarities in script content among romantic comedies of different time periods.
 
-# Equations
-
-Here is an equation: $$ 
-  f_{X}(x) = \left(\frac{\alpha}{\beta}\right)
-  \left(\frac{x}{\beta}\right)^{\alpha-1}
-  e^{-\left(\frac{x}{\beta}\right)^{\alpha}}; 
-  \alpha,\beta,x > 0 .
-$$
-
-Inline equations work as well: $\sum_{i = 2}^\infty\{\alpha_i^\beta\}$
-
-# Figures and tables
-
-@fig-meaningless is generated using an R chunk.
-
-```{r}
-#| label: fig-meaningless
-#| fig-cap: A meaningless scatterplot
-#| fig-width: 5
-#| fig-height: 5
-#| fig-align: center
-#| out-width: 50%
-#| echo: false
-plot(runif(25), runif(25))
-```
-
-# Tables coming from R
-
-Tables can also be generated using R chunks, as shown in @tbl-simple example.
-
-```{r}
-#| label: tbl-simple
-#| tbl-cap: Caption centered above table
-#| echo: true
-knitr::kable(head(mtcars)[,1:4])
-```
+Lastly, after important features have been engineered, a Random Forest model will help illustrate the similarity or dissimilarity of romantic comedies across time periods. In forming a classification model, the aim is to evaluate if scripts from different time periods are truly different in some aspect or if there is another factor not considered in this paper.
 
 # References {.unnumbered}
