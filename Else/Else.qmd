@@ -55,5 +55,3 @@ Also, this project will employ Topic Modeling through Latent Dirichlet Allocatio
 Additionally, correlation analysis will be employed to investigate similarities in script content among romantic comedies of different time periods.
 
 Lastly, after important features have been engineered, a Random Forest model will help illustrate the similarity or dissimilarity of romantic comedies across time periods. In forming a classification model, the aim is to evaluate if scripts from different time periods are truly different in some aspect or if there is another factor not considered in this paper.
-
-# References {.unnumbered}
