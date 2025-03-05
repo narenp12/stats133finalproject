@@ -1,5 +1,5 @@
 ---
-title: "stats 133 project - data cleaning"
+title: "stats 133 project - data cleaning/processing"
 author: "Caleb Williams"
 date: '`r Sys.Date()`'
 output: pdf_document
@@ -35,22 +35,8 @@ movie_text <- read.csv('/Users/calebwilliams/Downloads/stats133finalproject/titl
 head(movie_text, 10)
 
 ```
-```{r}
-titles <- movie_text$title
-titles[21] <- "40 Year-Old Virgin"
-titles <- sort(titles)
-movie_text$title <- titles
 
-years <- sort(movie_text$year)
-year_index <- which(years == 2005)
-
-titles <- sort(titles)
-movie_text$title <- titles
-
-movie_text
-```
-
-
+# Text Cleaning
 ```{r}
 
 clean_text <- function(text) {
@@ -70,14 +56,19 @@ clean_text <- function(text) {
 # apply cleaning function
 movie_text$text <- sapply(movie_text$text, clean_text)
 
+```
 
-# tokenize text 
+
+# Tokenization
+```{r}
 text_tokens <- movie_text %>%
   select(title, text) %>%              
   unnest_tokens(word, text)
 
+```
 
-# convert to tf_idf format 
+# Convert to tf_idf format 
+```{r}
 text_tf_idf <- text_tokens %>%
   count(title, word) %>%   
   ungroup() %>%                      
@@ -89,8 +80,9 @@ sample_n(text_tf_idf, 50)
 
 ```
 
+
+# Export tf_idf format to csv
 ```{r}
-# export tf_idf format to csv
-write_csv('movie_texts_tf_idf.csv')
+write.csv(text_tf_idf, 'movie_texts_tf_idf.csv')
 ```
 
