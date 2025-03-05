@@ -21,5 +21,10 @@ library(topicmodels)
 library(gridExtra)
 ```
 ```{r}
-movies <- read_csv("movies_and_metadata.csv")
+
 ```
+
+```{r}
+
+```
+
