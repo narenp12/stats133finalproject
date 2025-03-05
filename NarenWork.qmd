@@ -1,0 +1,25 @@
+---
+title: "NarenWork"
+author: "Naren"
+format: pdf
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+library(tidytext)
+library(stringr)
+library(pdftools)
+library(syuzhet)
+library(textdata)
+library(gutenbergr)
+library(readtext)
+library(tm)
+library(quanteda)
+library(Rgraphviz)
+library(topicmodels)
+library(gridExtra)
+```
+```{r}
+movies <- read_csv("movies_and_metadata.csv")
+```
