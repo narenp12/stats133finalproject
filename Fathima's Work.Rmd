@@ -1,0 +1,14 @@
+---
+title: "Fathima's Work"
+output: html_document
+date: "2025-03-05"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+data <- read.csv("")
+```
+
