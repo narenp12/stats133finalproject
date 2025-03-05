@@ -1,0 +1,96 @@
+---
+title: "stats 133 project - data cleaning"
+author: "Caleb Williams"
+date: '`r Sys.Date()`'
+output: pdf_document
+---
+```{r}
+
+library(dplyr)
+library(tidyr)
+library(tidytext)
+library(tm)
+library(syuzhet)
+library(pdftools)
+library(quanteda)
+library(quanteda.corpora)
+library(stringr)
+library(ggplot2)
+library(readtext)
+library(reshape2)
+library(wordcloud)
+library(wordcloud2)
+library(SnowballC)
+library(purrr)
+library(RColorBrewer)
+
+```
+
+
+```{r}
+set.seed(133)
+
+movie_text <- read.csv('/Users/calebwilliams/Downloads/stats133finalproject/title_year_text.csv')
+
+head(movie_text, 10)
+
+```
+```{r}
+titles <- movie_text$title
+titles[21] <- "40 Year-Old Virgin"
+titles <- sort(titles)
+movie_text$title <- titles
+
+years <- sort(movie_text$year)
+year_index <- which(years == 2005)
+
+titles <- sort(titles)
+movie_text$title <- titles
+
+movie_text
+```
+
+
+```{r}
+
+clean_text <- function(text) {
+  text <- tolower(text)
+  text <- removeNumbers(text)
+  text <- removePunctuation(text) 
+  text <- removeWords(text, stopwords("en"))
+  text <- stripWhitespace(text)
+  text <- stemDocument(text)
+  
+  # specific transformations
+  text <- gsub("mmddyyyy", " ", text)
+
+  return(text)
+}
+
+# apply cleaning function
+movie_text$text <- sapply(movie_text$text, clean_text)
+
+
+# tokenize text 
+text_tokens <- movie_text %>%
+  select(title, text) %>%              
+  unnest_tokens(word, text)
+
+
+# convert to tf_idf format 
+text_tf_idf <- text_tokens %>%
+  count(title, word) %>%   
+  ungroup() %>%                      
+  bind_tf_idf(word, title, n) %>%      
+  arrange(desc(tf_idf))  
+
+
+sample_n(text_tf_idf, 50)
+
+```
+
+```{r}
+# export tf_idf format to csv
+write_csv('movie_texts_tf_idf.csv')
+```
+
