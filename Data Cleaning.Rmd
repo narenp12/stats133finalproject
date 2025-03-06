@@ -10,6 +10,7 @@ output: pdf_document
 library(dplyr)
 library(tidyr)
 library(tidytext)
+library(tibble)
 library(tm)
 library(syuzhet)
 library(pdftools)
@@ -25,6 +26,7 @@ library(wordcloud2)
 library(SnowballC)
 library(purrr)
 library(RColorBrewer)
+library(ggfortify)
 
 ```
 
@@ -122,7 +124,7 @@ head(tf_idf_decade)
 
 # Export tf_idf format to csv
 ```{r}
-write.csv(text_tf_idf, 'movie_texts_tf_idf.csv')
+write.csv(tf_idf_decade, 'movie_texts_tf_idf.csv')
 ```
 
 
@@ -133,46 +135,122 @@ write.csv(text_tf_idf, 'movie_texts_tf_idf.csv')
 dtm <- tidy_text %>% 
   cast_dtm(title, word, n)
 
-dtm %>% inspect()
+#dtm %>% inspect()
 
 # remove sparse terms 
-dtm <- removeSparseTerms(dtm, 0.99)
+dtm <- removeSparseTerms(dtm, 0.96)
+
+
+dtm %>% inspect()
 
 ```
 
-```{r}
-
-dfm <- dtm <- tidy_text %>% 
-  cast_dfm(title, word, n)
-
-
-dfm
-```
 # Lexical Diversity
 ```{r}
+
+# dtm to dfm (dtm -> tidy -> dfm)
+
+tidy_dtm <- tidy(dtm)
+
+dfm <- tidy_dtm %>%
+  cast_dfm(document, term, count)  
+
+head(dfm)
+
+```
+
+```{r}
+# lexical diversity
 lexdiv <- textstat_lexdiv(dfm)
 lexdiv
+
+lexdiv <- lexdiv %>% rename(title = document)
+
 ```
 
 ```{r}
+#  unique title-year-decade pairs
+unique_years <- tf_idf_decade %>%
+  select(title, year, decade) %>%
+  distinct()
 
-ggplot(lexdiv, aes(x = seq_len(nrow(lexdiv)), y = TTR, group = 1)) +
-  geom_line(color = "blue") +  
-  scale_x_continuous(breaks = seq_len(nrow(lexdiv)), labels = lexdiv$document) +  # Custom x-axis labels
-  labs(title = "Lexical Diversity of 30 Popular Rom Coms",
-       x = NULL,
-       y = "TTR") + 
+lexdiv_decade <- lexdiv %>%
+  left_join(unique_years, by = "title")
+
+lexdiv_decade
+
+```
+```{r}
+lexdiv_summary <- lexdiv_decade %>%
+  group_by(decade) %>%
+  summarize(mean_TTR = mean(TTR)) # get mean TTR per decade 
+
+ggplot(lexdiv_summary, aes(x = decade, y = mean_TTR, group = 1)) +
+  geom_line(color = "mediumpurple1", size = 1) +  
+  geom_point(color = "violet", size = 2) +  
+  labs(title = "Mean TTR by Decade",
+       x = "Decade",
+       y = "Mean TTR") +
+  theme_minimal()
+
+```
+
+# ANOVA to see if difference in TTR between decades is significant
+```{r}
+model <- lm(TTR ~ decade, data = lexdiv_decade)
+summary(model)
+
+# check normality assumptions
+par(mfrow=c(2,2))
+autoplot(model)
+
+# they look good!
+
+# p-value: 0.267
+# differences are NOT significant!! 
+```
+
+
+
+
+# Word Frequency Per Decade
+```{r}
+top_words_per_decade <- tf_idf_decade %>%
+  group_by(decade, word) %>%
+  summarize(total_n = sum(n), .groups = "drop") %>%  
+  arrange(decade, desc(total_n)) %>%
+  group_by(decade) %>%
+  slice_head(n = 10) # select top 10 words
+
+
+top_words_per_decade
+
+```
+
+```{r}
+ggplot(top_words_per_decade, aes(x = reorder_within(word, total_n, decade), y = total_n, fill = decade)) +
+  geom_col(show.legend = FALSE) + 
+  facet_wrap(~decade, scales = "free") +  
+  coord_flip() +
+  labs(title = "Top 10 Most Frequent Words Per Decade",
+       x = "Word",
+       y = "Frequency") +
   theme_minimal() + 
-  theme(axis.text.x = element_text(color = 'black', size = 9, angle = 75, hjust = 1),
-          axis.text.y = element_text(color = 'black'))
+  scale_fill_manual(values = c(
+    "1980s" = "lightcoral",
+    "1990s" = "pink1",
+    "2000s" = "thistle2",
+    "2010s" = "mediumpurple1"
+  )) +
+  scale_x_reordered() 
 
 ```
 
 
 
-
 ```{r}
-# lexical diversity by year
+# correlation analysis of documents within each decade -- all rom coms of the 90s, etc. 
+
 
 
 ```
