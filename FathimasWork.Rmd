@@ -1,0 +1,318 @@
+---
+title: "Fathima's Work"
+output: html_document
+date: "2025-03-05"
+---
+
+```{r}
+m <- as.matrix(dtm)
+
+distMatrix <- dist(m, method="cosine")
+
+groups <- hclust(distMatrix,method="ward.D")
+plot(groups, cex=0.9, hang=-1)
+rect.hclust(groups, k=5)
+
+tdm.tfidf <- tm::weightTfIdf(dtm)
+dim(tdm.tfidf)
+
+tdm.tfidf <- tm::removeSparseTerms(tdm.tfidf, 0.80)
+dim(tdm.tfidf)
+
+clustering.kmeans <- kmeans(tfidf.matrix, 3)
+
+clustering.kmeans$tot.withinss
+
+clustering.kmeans$betweenss
+
+clustering.kmeans$centers
+
+clustering.hierarchical <- hclust(distMatrix, method = "ward.D2")
+clustering.hierarchical
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(text2vec)
+library(tm)
+library(slam)
+library(tidyverse)
+library(pdftools)
+library(stringr)
+library(tibble)
+library(tidytext)
+library(tm)
+library(tokenizers)
+library(syuzhet)
+library(textdata)
+library(dplyr)
+library(ggplot2)
+library(wordcloud)
+library(RColorBrewer)
+library(corrplot)
+library(quanteda)
+library(tidyverse)
+```
+
+```{r}
+set.seed(133)
+data <- read.csv("movies_and_metadata.csv")
+
+movie_sheet <- read.csv("~/Downloads/133 Final Project  - Sheet1 (2).csv")
+
+dtm <- read.csv("movie_texts_tf_idf.csv")
+head(dtm)
+
+```
+```{r, warning = FALSE}
+library(doParallel)
+ncores <- detectCores()
+clus <- makeCluster(ncores - 1)
+registerDoParallel(clus)
+
+m <- as.matrix(dtm)
+
+distMatrix <- dist(m, method="cosine")
+
+groups <- hclust(distMatrix,method="ward.D")
+plot(groups, cex=0.9, hang=-1)
+rect.hclust(groups, k=5)
+
+tdm.tfidf <- tm::weightTfIdf(dtm)
+dim(tdm.tfidf)
+
+tdm.tfidf <- tm::removeSparseTerms(tdm.tfidf, 0.80)
+dim(tdm.tfidf)
+
+clustering.kmeans <- kmeans(tfidf.matrix, 3)
+
+clustering.kmeans$tot.withinss
+
+clustering.kmeans$betweenss
+
+clustering.kmeans$centers
+
+clustering.hierarchical <- hclust(distMatrix, method = "ward.D2")
+clustering.hierarchical
+```
+
+
+```{r}
+movie_sheet <- arrange(movie_sheet, by = Title)
+
+data$title <- movie_sheet$Title
+data$year <- movie_sheet$Year
+
+data$id <- NULL
+data$heading <- NULL
+data$origin <- NULL
+data$author <- NULL
+data$timestamp <- NULL
+data$language <- NULL
+
+data <- data %>% select(, c(title, year, text))
+
+
+write_csv(data, file = "title_year_text.csv")
+
+```
+
+```{r}
+clean_data <- read.csv("movie_texts_tf_idf.csv")
+
+bing_sentiments <- get_sentiments("bing") # Contains words labeled as "positive" or "negative"
+
+bing_sentiment <- clean_data %>%
+  inner_join(bing_sentiments, by = "word")
+
+
+# count of pos/negative sentiment scores
+sentiment_summary <- bing_sentiment %>%
+  group_by(title, sentiment) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  pivot_wider(names_from = sentiment, values_from = count, values_fill = list(count = 0))
+
+sentiment_summary
+
+# Calculate overall sentiment score (positive - negative)
+sentiment_summary <- sentiment_summary %>%
+  mutate(sentiment_score = positive - negative)
+print(sentiment_summary)
+
+``` 
+
+
+### Shows that the words with the highest weight have mostly negative afinn scores. So ther are mostly negative words.  
+```{r}
+# Get sentiment lexicon (AFINN)
+afinn <- get_sentiments("afinn")
+
+# Join with dataset to get sentiment scores
+df_sentiment <- clean_data %>%
+  inner_join(afinn, by = "word") %>%
+  mutate(weighted_sentiment = value * tf_idf)  # Weighting sentiment by TF-IDF
+
+# Summarize by movie
+df_summary <- df_sentiment %>%
+  group_by(title) %>%
+  summarize(sentiment_score = sum(weighted_sentiment, na.rm = TRUE))
+
+print(df_summary)
+
+ggplot(df_summary, aes(x = reorder(title, sentiment_score), y = sentiment_score, fill = sentiment_score)) +
+  geom_col() +
+  coord_flip() +  # Flip for better readability
+  scale_fill_gradient2(low = "purple", mid = "white", high = "pink", midpoint = 0) + 
+  labs(title = "AFINN Sentiment Analysis of Movies (Weighted by TF-IDF)",
+       x = "Movie Title",
+       y = "Sentiment Score") +
+  theme_minimal()
+
+# Summarize by decade
+df_decade_summary <- df_sentiment %>%
+  group_by(decade) %>%
+  summarize(sentiment_score = sum(weighted_sentiment, na.rm = TRUE)) %>%
+  mutate(decade = factor(decade, levels = c("1980s", "1990s", "2000s", "2010s")))  # Ensure correct order
+
+# **Bar Chart: Sentiment Scores by Decade**
+ggplot(df_decade_summary, aes(x = decade, y = sentiment_score, fill = sentiment_score)) +
+  geom_col() +
+  scale_fill_gradient2(low = "purple", mid = "white", high = "pink", midpoint = 0) + 
+  labs(title = "AFINN Sentiment Analysis of Movies by Decade (Weighted by TF-IDF)",
+       x = "Decade",
+       y = "Sentiment Score") +
+  theme_minimal()
+
+
+```
+ 
+```{r}
+avg_afinn_scores <- clean_data %>%
+  inner_join(afinn, by = c("word" = "word")) %>%
+  group_by(title) %>%
+  summarise(average_afinn_score = mean(value))
+avg_afinn_scores
+
+afinn_v_year <- inner_join(data, avg_afinn_scores, by = "title")
+afinn_v_year$text <- NULL
+
+# Sort the dataset by average_afinn_score in ascending order
+afinn_v_year_sorted <- afinn_v_year %>%
+  arrange(average_afinn_score) %>%
+  select(average_afinn_score, title, year)  # Reorder columns
+
+# View the sorted data
+print(afinn_v_year_sorted)
+
+```
+
+### Shows the average afinn score. Most movies have mostly negative words.
+```{r}
+# Plot the average AFINN score per movie without the legend
+ggplot(afinn_v_year_sorted, aes(x = title, y = average_afinn_score)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(title = "Average AFINN Sentiment Score per Movie",
+       x = "Movie",
+       y = "Average AFINN Score") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none")  # Remove the legend
+
+
+# Calculate the average AFINN score per movie
+avg_afinn_scores <- clean_data %>%
+  inner_join(afinn, by = "word") %>%
+  group_by(title, decade) %>%  # Include decade for grouping later
+  summarise(average_afinn_score = mean(value, na.rm = TRUE))
+
+# Summarize by decade
+afinn_v_decade <- avg_afinn_scores %>%
+  group_by(decade) %>%
+  summarise(average_afinn_score = mean(average_afinn_score, na.rm = TRUE)) %>%
+  mutate(decade = factor(decade, levels = c("1980s", "1990s", "2000s", "2010s")))  # Ensure correct order
+
+# **Bar Chart: Average AFINN Sentiment Score by Decade**
+ggplot(afinn_v_decade, aes(x = decade, y = average_afinn_score, fill = average_afinn_score)) +
+  geom_col() +
+  scale_fill_gradient2(low = "lightblue", mid = "white", high = "green", midpoint = 0) + 
+  labs(title = "Average AFINN Sentiment Score by Decade",
+       x = "Decade",
+       y = "Average AFINN Score") +
+  theme_minimal()
+
+```
+
+```{r}
+# Load NRC sentiment lexicon
+nrc <- get_sentiments("nrc")
+
+# Join dataset with NRC lexicon
+df_sentiment <- clean_data %>%
+  inner_join(nrc, by = "word") %>%
+  count(title, sentiment, wt = tf_idf, name = "sentiment_score")  # Aggregate sentiment scores
+
+df_sentiment
+
+# Separate "positive" and "negative" into their own dataset
+df_pos_neg <- df_sentiment %>% filter(sentiment %in% c("positive", "negative"))
+
+# Keep only specific emotions in the main bar chart
+df_emotions <- df_sentiment %>% filter(!sentiment %in% c("positive", "negative"))
+
+# **Bar Chart for Specific Emotions**
+ggplot(df_emotions, aes(x = sentiment, y = sentiment_score, fill = sentiment)) +
+  geom_col() +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set3") +
+  labs(title = "Emotion Distribution Across Movies (Excluding Positive/Negative)",
+       x = "Sentiment/Emotion",
+       y = "TF-IDF Weighted Score") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate labels
+
+# **Bar Chart for Overall Positive vs Negative Sentiment**
+ggplot(df_pos_neg, aes(x = sentiment, y = sentiment_score, fill = sentiment)) +
+  geom_col() +
+  theme_minimal() +
+  scale_fill_manual(values = c("positive" = "blue", "negative" = "red")) +  # Strong contrasting colors
+  labs(title = "Overall Positive vs Negative Sentiment",
+       x = "Sentiment",
+       y = "TF-IDF Weighted Score") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+# Join dataset with NRC lexicon and aggregate by decade
+df_sentiment <- clean_data %>%
+  inner_join(nrc, by = "word") %>%
+  group_by(decade, sentiment) %>%
+  summarise(sentiment_score = sum(tf_idf, na.rm = TRUE)) %>%
+  ungroup()
+
+# Separate "positive" and "negative" into their own dataset
+df_pos_neg <- df_sentiment %>% filter(sentiment %in% c("positive", "negative"))
+
+# Keep only specific emotions in the main bar chart
+df_emotions <- df_sentiment %>% filter(!sentiment %in% c("positive", "negative"))
+
+# **Bar Chart for Specific Emotions by Decade**
+ggplot(df_emotions, aes(x = sentiment, y = sentiment_score, fill = sentiment)) +
+  geom_col() +
+  facet_wrap(~decade) +  # Separate by decade
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set3") +
+  labs(title = "Emotion Distribution Across Decades (Excluding Positive/Negative)",
+       x = "Sentiment/Emotion",
+       y = "TF-IDF Weighted Score") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate labels
+
+# **Bar Chart for Positive vs Negative Sentiment by Decade**
+ggplot(df_pos_neg, aes(x = sentiment, y = sentiment_score, fill = sentiment)) +
+  geom_col(position = "dodge") +  # Side-by-side bars
+  facet_wrap(~decade) +  # Separate by decade
+  theme_minimal() +
+  scale_fill_manual(values = c("positive" = "blue", "negative" = "red")) +
+  labs(title = "Positive vs Negative Sentiment Across Decades",
+       x = "Sentiment",
+       y = "TF-IDF Weighted Score") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
