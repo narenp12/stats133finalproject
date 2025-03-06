@@ -12,7 +12,6 @@ library(stringr)
 library(pdftools)
 library(syuzhet)
 library(textdata)
-library(gutenbergr)
 library(readtext)
 library(tm)
 library(quanteda)
@@ -20,6 +19,14 @@ library(Rgraphviz)
 library(topicmodels)
 library(gridExtra)
 ```
+
+```{r}
+library(doParallel)
+ncores <- detectCores()
+clus <- makeCluster(ncores - 1)
+registerDoParallel(clus)
+```
+
 ```{r}
 movies <- read_csv("movie_texts_tf_idf.csv")
 ```
@@ -66,11 +73,36 @@ docs %>%
 ## Classification model
 .
 ```{r}
-
+texts <- read_csv("cleaned_text_decade.csv") %>% select(title, decade, text)
+corp <- Corpus(VectorSource(texts$text))
+dtm <- DocumentTermMatrix(corp)
+dtm <- removeSparseTerms(dtm, 0.96)
 ```
 
 ```{r}
-data <- as.data.frame(as.matrix(mov))
-colnames(data) <- make.names(colnames(data))
+data <- as.data.frame(as.matrix(dtm), stringsAsFactors=False)
+data$decade <- texts$decade
+data
+
+print(table(data$decade))
+prop.table(table(data$decade))
+```
+```{r}
+library(randomForest)
+library(caTools)
+set.seed(133)
+
+data$decade <- as.factor(data$decade)
+split <- sample.split(data$decade, SplitRatio = 0.8)
+train <- subset(data, split == TRUE)
+test <- subset(data, split == FALSE)
+
+print(dim(train))
+print(dim(test))
+```
+```{r}
+model <- randomForest(decade ~ ., train)
+predictions <- predict(model, newdata = test)
+trainp <- predict(model, newdata = train)
 ```
 
