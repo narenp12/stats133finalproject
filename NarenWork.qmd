@@ -1,6 +1,6 @@
 ---
 title: "NarenWork"
-author: "Naren"
+author: "Naren Prakash"
 format: pdf
 editor: visual
 ---
@@ -70,11 +70,16 @@ docs %>%
   geom_boxplot() +
   facet_wrap(~decade) + xlab("Topic") + scale_fill_brewer(palette = "Pastel1") + theme_minimal() + labs(fill = "Topic colors") + ggtitle("Box plots of gamma value by topics")
 ```
+
 ## Classification model
+
 .
+
 ```{r}
 texts <- read_csv("cleaned_text_decade.csv") %>% select(title, decade, text)
+texts$text <- gsub(pattern = '[[:punct:]]', replacement = '', texts$text)
 corp <- Corpus(VectorSource(texts$text))
+corp <- tm_map(corp, removePunctuation)
 dtm <- DocumentTermMatrix(corp)
 dtm <- removeSparseTerms(dtm, 0.96)
 ```
@@ -82,27 +87,27 @@ dtm <- removeSparseTerms(dtm, 0.96)
 ```{r}
 data <- as.data.frame(as.matrix(dtm), stringsAsFactors=False)
 data$decade <- texts$decade
-data
 
 print(table(data$decade))
 prop.table(table(data$decade))
 ```
+
 ```{r}
 library(randomForest)
-library(caTools)
 set.seed(133)
 
-data$decade <- as.factor(data$decade)
-split <- sample.split(data$decade, SplitRatio = 0.8)
-train <- subset(data, split == TRUE)
-test <- subset(data, split == FALSE)
+num <- floor(0.7 * nrow(data))
+
+train_ind <- sample(seq_len(nrow(data)), size  = num)
+train <- data[train_ind, ]
+test <- data[-train_ind, ]
 
 print(dim(train))
 print(dim(test))
 ```
+
 ```{r}
 model <- randomForest(decade ~ ., train)
 predictions <- predict(model, newdata = test)
 trainp <- predict(model, newdata = train)
 ```
-
