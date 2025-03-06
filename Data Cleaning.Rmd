@@ -28,6 +28,8 @@ library(purrr)
 library(RColorBrewer)
 library(ggfortify)
 
+library(gender)
+
 ```
 
 
@@ -42,7 +44,30 @@ head(movie_text, 10)
 # Text Cleaning
 ```{r}
 
+sets <- data(package = "genderdata")$results[,"Item"]
+data(list = sets, package = "genderdata")
+stopwords_names <- unique(genderdata::kantrowitz$name)
+
+
+removeWordsChunked <- function(txt, words, chunk_size = 500) {
+  if (length(words) == 0) return(txt)  # Handle empty word list case
+  
+  words_split <- split(words, ceiling(seq_along(words) / chunk_size))
+  
+  for (word_group in words_split) {
+    pattern <- paste0("\\b(", paste(word_group, collapse = "|"), ")\\b")
+    txt <- gsub(pattern, "", txt, perl = TRUE, ignore.case = TRUE)
+  }
+  
+  return(txt)
+}
 clean_text <- function(text) {
+  
+  # remove names
+  text <- removeWordsChunked(text, stopwords_names)
+
+  
+  
   text <- tolower(text)
   text <- removeNumbers(text)
   text <- removePunctuation(text) 
@@ -52,6 +77,7 @@ clean_text <- function(text) {
   
   # specific transformations
   text <- gsub("mmddyyyy", " ", text)
+  text <- removeWords(text, c("tin", "cup", "juno")) 
 
   return(text)
 }
@@ -60,13 +86,32 @@ clean_text <- function(text) {
 movie_text$text <- sapply(movie_text$text, clean_text)
 
 ```
+```{r}
+head(movie_text)
+```
+
+```{r}
+
+cleaned_text_decade <- movie_text %>%
+  mutate(decade = paste0(floor(year / 10) * 10, "s"))
+
+head(cleaned_text_decade) # cleaned corpus with decade
+```
+
+# Export movie_text_decade to csv
+```{r}
+write.csv(cleaned_text_decade, 'cleaned_text_decade.csv')
+```
+
+
 
 
 # Tokenization
 ```{r}
 text_tokens <- movie_text %>%
-  select(title, text) %>%              
-  unnest_tokens(word, text)
+  select(title, text) %>%
+  unnest_tokens(word, text) %>% 
+  anti_join(stop_words, by = "word")
 
 ```
 
@@ -86,7 +131,7 @@ text_tf_idf <- tidy_text %>%
   bind_tf_idf(word, title, n) %>%      
   arrange(desc(tf_idf))  
 
-head(text_tf_idf, 10)
+text_tf_idf
 
 ```
 
@@ -220,7 +265,7 @@ top_words_per_decade <- tf_idf_decade %>%
   summarize(total_n = sum(n), .groups = "drop") %>%  
   arrange(decade, desc(total_n)) %>%
   group_by(decade) %>%
-  slice_head(n = 10) # select top 10 words
+  slice_head(n = 15) # select top 10 words
 
 
 top_words_per_decade
@@ -258,7 +303,7 @@ ggplot(top_words_per_decade, aes(x = reorder_within(word, total_n, decade), y = 
 
 # N-grams
 ```{r}
-
+movie_bigrams <- 
 
 
 ```
