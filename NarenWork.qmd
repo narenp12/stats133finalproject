@@ -21,10 +21,56 @@ library(topicmodels)
 library(gridExtra)
 ```
 ```{r}
+movies <- read_csv("movie_texts_tf_idf.csv")
+```
+
+## LDA
+
+```{r}
+mov <- movies %>% cast_dtm(title, word, n)
+mov_LDA <- LDA(mov, k = 4, control = list(seed = 133))
+
+topics <- tidy(mov_LDA, matrix = "beta")
+
+topterms <- topics %>%
+  group_by(topic) %>%
+  top_n(10, beta) %>%
+  ungroup() %>%
+  arrange(topic, -beta)
+topterms %>%
+  mutate(term = reorder_within(term, beta, topic)) %>%
+  ggplot(aes(term,
+    beta,
+    fill = factor(topic)
+  )) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~topic,
+    scales =
+      "free"
+  ) +
+  coord_flip() +
+  scale_x_reordered() + theme_minimal() + ggtitle("10 most frequent terms by LDA topic group") + scale_fill_brewer(palette = "Pastel2")
+```
+
+```{r}
+titleandyear <- movies %>% mutate(document = title) %>% select(c(document, decade))
+docs <- tidy(mov_LDA, matrix = "gamma")
+docs <- docs %>% inner_join(titleandyear)
+docs$decade <- as.factor(docs$decade)
+docs %>%
+  mutate(document = reorder(document, gamma)) %>%
+  ggplot(aes(factor(topic), gamma, fill = as.factor(topic))) +
+  geom_boxplot() +
+  facet_wrap(~decade) + xlab("Topic") + scale_fill_brewer(palette = "Pastel1") + theme_minimal() + labs(fill = "Topic colors") + ggtitle("Box plots of gamma value by topics")
+```
+## Classification model
+.
+```{r}
 
 ```
 
 ```{r}
-
+data <- as.data.frame(as.matrix(mov))
+colnames(data) <- make.names(colnames(data))
 ```
 
