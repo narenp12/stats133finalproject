@@ -27,8 +27,10 @@ library(SnowballC)
 library(purrr)
 library(RColorBrewer)
 library(ggfortify)
-
+library(widyr)
 library(gender)
+library(ggraph)             
+library(igraph)            
 
 ```
 
@@ -291,20 +293,145 @@ ggplot(top_words_per_decade, aes(x = reorder_within(word, total_n, decade), y = 
 
 ```
 
+# Bigrams + Correlation Plots
+```{r}
+movie_bigrams <- cleaned_text_decade %>% unnest_tokens(bigram, text, token = "ngrams", n = 2)
 
+head(movie_bigrams,10)
+```
 
 ```{r}
-# correlation analysis of documents within each decade -- all rom coms of the 90s, etc. 
 
+movie_bigrams_separated <- movie_bigrams %>%
+  separate(bigram, c("word1", "word2"), sep = " ") %>%
+  pivot_longer(cols = c(word1, word2), names_to = "position", values_to = "word") %>%
+  select(-position)  
 
+word_counts <- movie_bigrams_separated %>%
+  count(word, sort = TRUE)
+
+word_cors <- movie_bigrams_separated %>%
+  group_by(word) %>%
+  filter(n() >= 20) %>%
+  pairwise_cor(word, title, sort = TRUE) %>% 
+  drop_na()
+
+sample_n(word_cors,10)
 
 ```
 
 
-# N-grams
 ```{r}
-movie_bigrams <- 
 
+plot_word_correlation <- function(movie_bigrams, n_top = 125, corr_threshold = 0.15) {
+  # get word correlations
+  word_cors <- movie_bigrams %>%
+    separate(bigram, c("word1", "word2"), sep = " ") %>%
+    count(word1, word2, sort = TRUE) %>%
+    filter(n >= 10) %>%  # Filter for words appearing at least 10 times
+    pairwise_cor(word1, word2, sort = TRUE) 
+  
+  # top correlated word pairs
+  top_words <- word_cors %>%
+    filter(correlation > corr_threshold) %>%  # Apply correlation threshold
+    arrange(desc(correlation)) %>%
+    slice_head(n = n_top) 
+  
+  word_graph <- graph_from_data_frame(top_words)
+  
+  # plot with ggraph
+  ggraph(word_graph, layout = "fr") +
+    geom_edge_link(aes(edge_alpha = correlation), show.legend = FALSE) +
+    geom_node_point(color = "lightblue", size = 5) +
+    geom_node_text(aes(label = name), repel = TRUE) +
+    theme_void()
+}
 
 ```
 
+
+
+```{r}
+bigrams_80s <- movie_bigrams %>% filter(decade == "1980s")
+bigrams_90s <- movie_bigrams %>% filter(decade == "1990s")
+bigrams_00s <- movie_bigrams %>% filter(decade == "2000s")
+bigrams_10s <- movie_bigrams %>% filter(decade == "2010s")
+```
+
+```{r}
+plot_word_correlation(bigrams_80s)
+```
+```{r}
+plot_word_correlation(bigrams_90s)
+```
+```{r}
+plot_word_correlation(bigrams_00s)
+```
+```{r}
+plot_word_correlation(bigrams_10s)
+```
+
+
+# Trigrams + Correlation Plots
+```{r}
+movie_trigrams <- cleaned_text_decade %>% unnest_tokens(trigram, text, token = "ngrams", n = 3)
+
+head(movie_trigrams,10)
+```
+
+```{r}
+
+plot_word_correlation_tri <- function(movie_trigrams, n_top = 125, corr_threshold = 0.15) {
+  library(tidyverse)
+  library(widyr)
+  library(igraph)
+  library(ggraph)
+
+  if (!"title" %in% colnames(movie_trigrams)) {
+    stop("Error: The input data must contain a 'title' column.")
+  }
+
+  word_cors <- movie_trigrams %>%
+    separate(trigram, c("word1", "word2", "word3"), sep = " ", remove = FALSE) %>%
+    pivot_longer(cols = c(word1, word2, word3), names_to = "position", values_to = "word") %>%
+    select(title, word) %>%  
+    group_by(word) %>%
+    filter(n() >= 20) %>%
+    pairwise_cor(word, title, sort = TRUE) %>%
+    drop_na()
+
+  top_words <- word_cors %>%
+    filter(correlation > corr_threshold) %>%  # Apply correlation threshold
+    arrange(desc(correlation)) %>%
+    slice_head(n = n_top)
+
+  word_graph <- graph_from_data_frame(top_words)
+
+  ggraph(word_graph, layout = "fr") +
+    geom_edge_link(aes(edge_alpha = correlation), show.legend = FALSE) +
+    geom_node_point(color = "lightblue", size = 5) +
+    geom_node_text(aes(label = name), repel = TRUE) +
+    theme_void()
+}
+
+```
+
+```{r}
+trigrams_80s <- movie_trigrams %>% filter(decade == "1980s")
+trigrams_90s <- movie_trigrams %>% filter(decade == "1990s")
+trigrams_00s <- movie_trigrams %>% filter(decade == "2000s")
+trigrams_10s <- movie_trigrams %>% filter(decade == "2010s")
+```
+
+```{r}
+plot_word_correlation_tri(trigrams_80s)
+```
+```{r}
+plot_word_correlation_tri(trigrams_90s)
+```
+```{r}
+plot_word_correlation_tri(trigrams_00s)
+```
+```{r}
+plot_word_correlation_tri(trigrams_10s)
+```
