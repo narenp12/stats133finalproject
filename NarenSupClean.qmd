@@ -19,6 +19,7 @@ library(Rgraphviz)
 library(topicmodels)
 library(gridExtra)
 library(arrow)
+library(gender)
 ```
 
 ```{r}
@@ -29,7 +30,7 @@ registerDoParallel(clus)
 ```
 
 ```{r}
-movie_text <- arrow:("movie_texts_tf_idf.csv")
+movie_text <- read_parquet("Python/pandas_sup_cleaned.parquet")
 ```
 
 # Text Cleaning
@@ -58,8 +59,6 @@ clean_text <- function(text) {
   # remove names
   text <- removeWordsChunked(text, stopwords_names)
 
-  
-  
   text <- tolower(text)
   text <- removeNumbers(text)
   text <- removePunctuation(text) 
