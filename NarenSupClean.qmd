@@ -1,0 +1,79 @@
+---
+title: "Naren Cleaning Supplemental Data"
+author: "Naren Prakash"
+format: pdf
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+library(tidytext)
+library(stringr)
+library(pdftools)
+library(syuzhet)
+library(textdata)
+library(readtext)
+library(tm)
+library(quanteda)
+library(Rgraphviz)
+library(topicmodels)
+library(gridExtra)
+library(arrow)
+```
+
+```{r}
+library(doParallel)
+ncores <- detectCores()
+clus <- makeCluster(ncores - 1)
+registerDoParallel(clus)
+```
+
+```{r}
+movie_text <- arrow:("movie_texts_tf_idf.csv")
+```
+
+# Text Cleaning
+
+```{r}
+
+sets <- data(package = "genderdata")$results[,"Item"]
+data(list = sets, package = "genderdata")
+stopwords_names <- unique(genderdata::kantrowitz$name)
+
+
+removeWordsChunked <- function(txt, words, chunk_size = 500) {
+  if (length(words) == 0) return(txt)  # Handle empty word list case
+  
+  words_split <- split(words, ceiling(seq_along(words) / chunk_size))
+  
+  for (word_group in words_split) {
+    pattern <- paste0("\\b(", paste(word_group, collapse = "|"), ")\\b")
+    txt <- gsub(pattern, "", txt, perl = TRUE, ignore.case = TRUE)
+  }
+  
+  return(txt)
+}
+clean_text <- function(text) {
+  
+  # remove names
+  text <- removeWordsChunked(text, stopwords_names)
+
+  
+  
+  text <- tolower(text)
+  text <- removeNumbers(text)
+  text <- removePunctuation(text) 
+  text <- removeWords(text, stopwords("en"))
+  text <- stripWhitespace(text)
+  text <- stemDocument(text)
+  
+  # specific transformations
+  text <- gsub("mmddyyyy", " ", text)
+  text <- removeWords(text, c("tin", "cup", "juno")) 
+
+  return(text)
+}
+
+# apply cleaning function
+movie_text$text <- sapply(movie_text$text, clean_text)
+```
