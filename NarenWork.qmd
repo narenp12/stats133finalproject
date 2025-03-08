@@ -34,6 +34,8 @@ movies <- read_csv("movie_texts_tf_idf.csv")
 ## LDA
 
 ```{r}
+movies <- movies %>% filter(!(word %in% c("gestur", c("offscreen"), c("cut"), c("continu"), c("page"), c("walk"), c("camera"))))
+
 mov <- movies %>% cast_dtm(title, word, n)
 mov_LDA <- LDA(mov, k = 4, control = list(seed = 133))
 
@@ -129,12 +131,14 @@ library(caret)
 train_conf <- confusionMatrix(train$decade, trainp)
 train_conf
 ```
+
 ### Test confusion
 
 ```{r}
 test_conf <- confusionMatrix(test$decade, predictions)
 test_conf
 ```
+
 ## Confusion Matrix Plots
 
 ```{r}
@@ -143,10 +147,12 @@ library(yardstick)
 tr_c <- conf_mat(as.matrix(train_conf))
 autoplot(tr_c, type = "heatmap") + scale_fill_gradient(low = "lavender", high = "purple") + ggtitle("Train set confusion matrix")
 ```
+
 ```{r}
 t_c <- conf_mat(as.matrix(test_conf))
 autoplot(t_c, type = "heatmap") + scale_fill_gradient(low = "lightblue", high = "blue") + ggtitle("Test set confusion matrix")
 ```
+
 ## Finding actual topic divisions (not just looking for decade based topic divisions)
 
 ```{r}
@@ -164,6 +170,7 @@ results <- FindTopicsNumber(
 
 FindTopicsNumber_plot(results)
 ```
+
 Our elbow methods tell us that k=6 is likely the best interpretable division.
 
 ```{r}
@@ -207,8 +214,9 @@ word_list <- top_samp %>%
   summarize(terms = paste(term, collapse = ", "), .groups = "drop")
 print(word_list)
 ```
+
 ```{r}
-chatgpt_topics <- c("Sports and Seasonal Celebrations", "Casual Conversations and Emotional Exchanges", "Everyday Moments and Personal Connections", "On-Screen Interactions and Gestures", "Life Reflections and Future Aspirations", "Communication and Connection in Daily Life")
+chatgpt_topics <- c("Golf Game", "Social Gathering", "Emotional Conversation", "Home Interaction", "Everyday Moments", "Christmas Reflection")
 
 word_list$labels <- chatgpt_topics
 
@@ -229,6 +237,7 @@ z <- docs %>%
   coord_flip()
 ggplotly(z)
 ```
+
 ```{r}
 library(dplyr)
 library(ggplot2)
@@ -252,11 +261,11 @@ plot_list <- lapply(seq_along(topics), function(i) {
 
   ggplot(docs_topic, aes(factor(labels), gamma, fill = as.factor(labels))) +
     geom_boxplot() +
-    xlab("Topic labels") +
+    xlab("Topic label") +
     scale_fill_manual(values = custom_colors[i]) + # Use the custom color for the specific topic
     theme_minimal() +
     labs(fill = "Topic colors") +
-    ggtitle(paste("Box plots of gamma value for topic:", t)) +
+    ggtitle(paste("Box plots of gamma value for topic:", word_list$labels[t])) +
     coord_flip()
 })
 
