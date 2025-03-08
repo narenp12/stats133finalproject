@@ -31,6 +31,7 @@ library(widyr)
 library(gender)
 library(ggraph)             
 library(igraph)            
+library(stringdist)
 
 ```
 
@@ -163,7 +164,6 @@ tf_idf_decade <- tf_idf_year %>%
 
 
 head(tf_idf_decade)
-
 
 ```
 
@@ -435,3 +435,189 @@ plot_word_correlation_tri(trigrams_00s)
 ```{r}
 plot_word_correlation_tri(trigrams_10s)
 ```
+
+# Word Co-Occurences
+```{r}
+
+word_pairs <- tf_idf_decade %>% 
+  pairwise_count(word, title, sort = TRUE, upper = FALSE)
+
+
+word_pairs_filtered <- word_pairs %>%
+  arrange(desc(n)) %>%
+  slice_head(n = 100)
+
+head(word_pairs_filtered)
+```
+
+# top word pairs, not by decade
+```{r}
+word_pairs_network <- word_pairs_filtered %>%
+  graph_from_data_frame() %>%
+  ggraph(layout = "fr") +
+  geom_edge_link(aes(edge_alpha = n, edge_width = n), edge_colour = "cyan4", alpha=0.35) +
+  geom_node_point(size = 5) +
+  geom_node_text(aes(label = name), repel = TRUE, point.padding = unit(0.2, "lines"), max.overlaps = 100) +
+  theme_void()
+
+word_pairs_network
+```
+
+# per decade
+```{r}
+pairs_80s <- tf_idf_decade %>%
+  filter(decade == "1980s") %>% 
+  select(title, word, n) %>% 
+  pairwise_count(word, title, sort = TRUE, upper = FALSE) %>%  
+  arrange(desc(n)) %>% 
+  slice_head(n = 100)
+
+
+
+head(pairs_80s)
+```
+```{r}
+pairs_80s %>%
+  filter(n >= 5) %>%
+  graph_from_data_frame() %>%
+  ggraph(layout = "fr") +
+  geom_edge_link(aes(edge_alpha = n, edge_width = n), edge_colour = "cyan4") +
+  geom_node_point(size = 5) +
+  geom_node_text(aes(label = name), repel = TRUE) +
+  theme_void()
+
+
+```
+
+
+
+```{r}
+
+pairs_90s <- tf_idf_decade %>%
+  filter(decade == "1980s") %>% 
+  select(title, word, n) %>% 
+  pairwise_count(word, title, sort = TRUE, upper = FALSE) %>%  
+  arrange(desc(n)) %>% 
+  slice_head(n = 100)
+
+
+
+head(pairs_90s)
+
+pairs_90s %>%
+  filter(n >= 5) %>%
+  graph_from_data_frame() %>%
+  ggraph(layout = "fr") +
+  geom_edge_link(aes(edge_alpha = n, edge_width = n), edge_colour = "cyan4") +
+  geom_node_point(size = 5) +
+  geom_node_text(aes(label = name), repel = TRUE) +
+  theme_void()
+
+```
+
+
+```{r}
+
+
+
+pairs_00s <- tf_idf_decade %>%
+  filter(decade == "1980s") %>% 
+  select(title, word, n) %>% 
+  pairwise_count(word, title, sort = TRUE, upper = FALSE) %>%  
+  arrange(desc(n)) %>% 
+  slice_head(n = 100)
+
+
+
+head(pairs_00s)
+
+pairs_00s %>%
+  filter(n >= 5) %>%
+  graph_from_data_frame() %>%
+  ggraph(layout = "fr") +
+  geom_edge_link(aes(edge_alpha = n, edge_width = n), edge_colour = "cyan4") +
+  geom_node_point(size = 5) +
+  geom_node_text(aes(label = name), repel = TRUE) +
+  theme_void()
+
+
+```
+
+```{r}
+
+
+
+pairs_10s <- tf_idf_decade %>%
+  filter(decade == "1980s") %>% 
+  select(title, word, n) %>% 
+  pairwise_count(word, title, sort = TRUE, upper = FALSE) %>%  
+  arrange(desc(n)) %>% 
+  slice_head(n = 100)
+
+
+
+head(pairs_10s)
+
+pairs_10s %>%
+  filter(n >= 5) %>%
+  graph_from_data_frame() %>%
+  ggraph(layout = "fr") +
+  geom_edge_link(aes(edge_alpha = n, edge_width = n), edge_colour = "cyan4") +
+  geom_node_point(size = 5) +
+  geom_node_text(aes(label = name), repel = TRUE) +
+  theme_void()
+
+
+```
+
+
+
+
+
+
+
+
+# network with all decades 
+```{r}
+
+word_pairs_by_decade <- tf_idf_decade %>% 
+  group_by(decade) %>% 
+  pairwise_count(word, title, sort = TRUE, upper = FALSE) %>% 
+  ungroup() 
+
+head(word_pairs_by_decade)
+
+```
+
+```{r}
+
+
+# keeping only the top 5 most frequent word pairs per decade
+word_pairs_top <- word_pairs_by_decade %>%
+  group_by(decade) %>%
+  slice_max(n, n = 5) %>%
+  ungroup()
+```
+
+
+```{r}
+edges <- word_pairs_top %>%
+  rename(from = decade, to = item1) %>%
+  select(from, to, n)
+```
+
+```{r}
+word_graph <- graph_from_data_frame(edges)
+```
+
+```{r}
+ggraph(word_graph, layout = "fr") +
+  geom_edge_link(aes(edge_alpha = n, edge_width = n), edge_colour = "cyan4", alpha = 0.9) +
+  geom_node_point(size = 2, color = "lightblue") +
+  geom_node_text(aes(label = name), repel = TRUE, fontface = "bold", point.padding = unit(0.2, "lines"), max.overlaps = 100) +
+  theme_void()
+
+```
+
+
+
