@@ -265,7 +265,7 @@ plot_list <- lapply(seq_along(topics), function(i) {
     scale_fill_manual(values = custom_colors[i]) + # Use the custom color for the specific topic
     theme_minimal() +
     labs(fill = "Topic colors") +
-    ggtitle(paste("Box plots of gamma value for topic:", word_list$labels[t])) +
+    ggtitle(paste("Box plots of gamma value for topic:", word_list$labels[t], "AKA", t)) +
     coord_flip()
 })
 
