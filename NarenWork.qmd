@@ -153,6 +153,22 @@ t_c <- conf_mat(as.matrix(test_conf))
 autoplot(t_c, type = "heatmap") + scale_fill_gradient(low = "lightblue", high = "blue") + ggtitle("Test set confusion matrix")
 ```
 
+## RF Variable Importance plot
+
+```{r}
+importance_data <- data.frame(importance(model))
+importance_data$term <- row.names(importance_data)
+importance_data %>%
+  arrange(desc(MeanDecreaseGini)) %>%
+  slice_head(n = 15) %>%
+  ggplot(aes(x = reorder(term, MeanDecreaseGini), y = MeanDecreaseGini, fill = MeanDecreaseGini)) +
+  geom_col() +
+  coord_flip() +
+  labs(title = "Variable Importance Plot", x = "Term", y = "Mean Decrease Gini") +
+  theme_minimal() +
+  scale_fill_gradient(high = "aquamarine")
+```
+
 ## Finding actual topic divisions (not just looking for decade based topic divisions)
 
 ```{r}
@@ -276,4 +292,90 @@ plotly_list <- lapply(plot_list, ggplotly)
 for (i in seq_along(plotly_list)) {
   print(plotly_list[[i]])
 }
+```
+
+## Document Clustering and similarity
+
+```{r}
+library(colorspace)
+library(dbscan)
+library(proxy)
+
+true_k <- 4
+
+weighted <- weightTfIdf(dtm)
+mat <- as.matrix(weighted)
+distance <- proxy::dist(mat, method = "cosine")
+```
+
+### K means
+
+```{r}
+kmeans <- kmeans(mat, true_k)
+```
+
+### Hierarchical
+
+```{r}
+hier <- hclust(distance, method = "ward.D2")
+```
+
+### Density
+
+```{r}
+db <- hdbscan(distance, minPts = 4)
+```
+
+```{r}
+master.cluster <- kmeans$cluster
+slave.hierarchical <- cutree(hier, k = true_k)
+slave.dbscan <- db$cluster
+```
+
+
+### Plots
+
+```{r}
+dec <- movies %>%
+  group_by(title) %>%
+  summarize(decade = mean(decade))
+```
+
+```{r}
+library(basicPlotteR)
+
+points <- cmdscale(distance, k = 2)
+palette <- colorspace::diverge_hcl(true_k)
+
+
+
+plot(points,
+  main = "K-Means clustering",
+  col = as.factor(master.cluster),
+  mai = c(0, 0, 0, 0),
+  mar = c(0, 0, 0, 0),
+  xaxt = "n", yaxt = "n",
+  xlab = "", ylab = ""
+)
+basicPlotteR::addTextLabels(points[, 1], points[, 2], labels = dec$decade, col.label = "purple")
+
+
+plot(points,
+  main = "Hierarchical clustering",
+  col = as.factor(slave.hierarchical),
+  mai = c(0, 0, 0, 0),
+  mar = c(0, 0, 0, 0),
+  xaxt = "n", yaxt = "n",
+  xlab = "", ylab = ""
+)
+basicPlotteR::addTextLabels(points[, 1], points[, 2], labels = dec$decade, col.label = "purple")
+plot(points,
+  main = "Density-based clustering",
+  col = as.factor(slave.dbscan),
+  mai = c(0, 0, 0, 0),
+  mar = c(0, 0, 0, 0),
+  xaxt = "n", yaxt = "n",
+  xlab = "", ylab = ""
+)
+basicPlotteR::addTextLabels(points[, 1], points[, 2], labels = dec$decade, col.label = "purple")
 ```
