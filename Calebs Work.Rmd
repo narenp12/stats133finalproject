@@ -264,7 +264,7 @@ autoplot(model)
 
 # they look good!
 
-# p-value: 0.267
+# p-value: 0.2078 > 0.05
 # differences are NOT significant!! 
 ```
 
@@ -278,7 +278,7 @@ top_words_per_decade <- tf_idf_decade %>%
   summarize(total_n = sum(n), .groups = "drop") %>%  
   arrange(decade, desc(total_n)) %>%
   group_by(decade) %>%
-  slice_head(n = 15) # select top 10 words
+  slice_head(n = 15) # select top n words
 
 
 top_words_per_decade
@@ -290,7 +290,7 @@ ggplot(top_words_per_decade, aes(x = reorder_within(word, total_n, decade), y = 
   geom_col(show.legend = FALSE) + 
   facet_wrap(~decade, scales = "free") +  
   coord_flip() +
-  labs(title = "Top 10 Most Frequent Words Per Decade",
+  labs(title = "Top 15 Most Frequent Words Per Decade",
        x = "Word",
        y = "Frequency") +
   theme_minimal() + 
@@ -303,6 +303,70 @@ ggplot(top_words_per_decade, aes(x = reorder_within(word, total_n, decade), y = 
   scale_x_reordered() 
 
 ```
+# Word clouds
+```{r}
+
+top_words_per_decade_2 <- tf_idf_decade %>%
+  group_by(decade, word) %>%
+  summarize(total_n = sum(n), .groups = "drop") %>%  
+  arrange(decade, desc(total_n)) %>%
+  group_by(decade) %>%
+  slice_head(n = 50) # select top 50 words
+
+
+
+
+count_80s <- top_words_per_decade_2 %>% filter(decade == '1980s')
+count_90s <- top_words_per_decade_2 %>% filter(decade == '1990s')
+count_00s <- top_words_per_decade_2 %>% filter(decade == '2000s')
+count_10s <- top_words_per_decade_2 %>% filter(decade == '2010s')
+```
+
+```{r}
+
+# 1980s
+wordcloud(
+  words = count_80s$word, 
+  freq = count_80s$total_n,   
+  max.words = 30,           
+  colors = brewer.pal(8, "Set1"),
+  main = "1980s Word Cloud"
+)
+
+# 1990s
+wordcloud(
+  words = count_90s$word, 
+  freq = count_90s$total_n,   
+  max.words = 30,           
+  colors = brewer.pal(8, "Set1"),
+  main = "1990s Word Cloud"
+)
+
+# 2000s
+wordcloud(
+  words = count_00s$word, 
+  freq = count_00s$total_n,   
+  max.words = 30,           
+  colors = brewer.pal(8, "Set1"),
+  main = "1990s Word Cloud"
+)
+
+
+# 2010s
+wordcloud(
+  words = count_10s$word, 
+  freq = count_10s$total_n,   
+  max.words = 30,           
+  colors = brewer.pal(8, "Set1"),
+  main = "1990s Word Cloud"
+)
+
+
+
+
+```
+
+
 
 # Bigrams + Correlation Plots
 ```{r}
