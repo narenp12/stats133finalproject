@@ -42,6 +42,7 @@ set.seed(133)
 movie_text <- read.csv('/Users/calebwilliams/Downloads/stats133finalproject/title_year_text.csv')
 
 head(movie_text, 10)
+
 ```
 
 # Text Cleaning
@@ -69,18 +70,27 @@ clean_text <- function(text) {
   # remove names
   text <- removeWordsChunked(text, stopwords_names)
 
-  
+  text <- removePunctuation(text) 
+  text <- gsub("[/@|\\\\\"]", " ", text)
+
+
   
   text <- tolower(text)
   text <- removeNumbers(text)
-  text <- removePunctuation(text) 
   text <- removeWords(text, stopwords("en"))
   text <- stripWhitespace(text)
   text <- stemDocument(text)
+
   
   # specific transformations
   text <- gsub("mmddyyyy", " ", text)
-  text <- removeWords(text, c("tin", "cup", "juno")) 
+  text <- removeWords(text, c("tin", "cup", "juno"))
+  text <- removeWords(text, c("gestur", "offscreen", "cut", "continu", "page", "walk", "camera", "scriptscom")) 
+  text <- gsub("•", "", text)
+
+
+  
+  
 
   return(text)
 }
@@ -89,6 +99,7 @@ clean_text <- function(text) {
 movie_text$text <- sapply(movie_text$text, clean_text)
 
 ```
+
 ```{r}
 head(movie_text)
 ```
