@@ -34,6 +34,8 @@ movies <- read_csv("movie_texts_tf_idf.csv")
 ## LDA
 
 ```{r}
+movies <- movies %>% filter(!(word %in% c("gestur", c("offscreen"), c("cut"), c("continu"), c("page"), c("walk"), c("camera"))))
+
 mov <- movies %>% cast_dtm(title, word, n)
 mov_LDA <- LDA(mov, k = 4, control = list(seed = 133))
 
@@ -129,12 +131,14 @@ library(caret)
 train_conf <- confusionMatrix(train$decade, trainp)
 train_conf
 ```
+
 ### Test confusion
 
 ```{r}
 test_conf <- confusionMatrix(test$decade, predictions)
 test_conf
 ```
+
 ## Confusion Matrix Plots
 
 ```{r}
@@ -143,10 +147,28 @@ library(yardstick)
 tr_c <- conf_mat(as.matrix(train_conf))
 autoplot(tr_c, type = "heatmap") + scale_fill_gradient(low = "lavender", high = "purple") + ggtitle("Train set confusion matrix")
 ```
+
 ```{r}
 t_c <- conf_mat(as.matrix(test_conf))
 autoplot(t_c, type = "heatmap") + scale_fill_gradient(low = "lightblue", high = "blue") + ggtitle("Test set confusion matrix")
 ```
+
+## RF Variable Importance plot
+
+```{r}
+importance_data <- data.frame(importance(model))
+importance_data$term <- row.names(importance_data)
+importance_data %>%
+  arrange(desc(MeanDecreaseGini)) %>%
+  slice_head(n = 15) %>%
+  ggplot(aes(x = reorder(term, MeanDecreaseGini), y = MeanDecreaseGini, fill = MeanDecreaseGini)) +
+  geom_col() +
+  coord_flip() +
+  labs(title = "Variable Importance Plot", x = "Term", y = "Mean Decrease Gini") +
+  theme_minimal() +
+  scale_fill_gradient(high = "aquamarine")
+```
+
 ## Finding actual topic divisions (not just looking for decade based topic divisions)
 
 ```{r}
@@ -164,6 +186,7 @@ results <- FindTopicsNumber(
 
 FindTopicsNumber_plot(results)
 ```
+
 Our elbow methods tell us that k=6 is likely the best interpretable division.
 
 ```{r}
@@ -207,8 +230,9 @@ word_list <- top_samp %>%
   summarize(terms = paste(term, collapse = ", "), .groups = "drop")
 print(word_list)
 ```
+
 ```{r}
-chatgpt_topics <- c("Sports and Seasonal Celebrations", "Casual Conversations and Emotional Exchanges", "Everyday Moments and Personal Connections", "On-Screen Interactions and Gestures", "Life Reflections and Future Aspirations", "Communication and Connection in Daily Life")
+chatgpt_topics <- c("Golf Game", "Social Gathering", "Emotional Conversation", "Home Interaction", "Everyday Moments", "Christmas Reflection")
 
 word_list$labels <- chatgpt_topics
 
@@ -229,6 +253,7 @@ z <- docs %>%
   coord_flip()
 ggplotly(z)
 ```
+
 ```{r}
 library(dplyr)
 library(ggplot2)
@@ -252,11 +277,11 @@ plot_list <- lapply(seq_along(topics), function(i) {
 
   ggplot(docs_topic, aes(factor(labels), gamma, fill = as.factor(labels))) +
     geom_boxplot() +
-    xlab("Topic labels") +
+    xlab("Topic label") +
     scale_fill_manual(values = custom_colors[i]) + # Use the custom color for the specific topic
     theme_minimal() +
     labs(fill = "Topic colors") +
-    ggtitle(paste("Box plots of gamma value for topic:", t)) +
+    ggtitle(paste("Box plots of gamma value for topic:", word_list$labels[t], "AKA", t)) +
     coord_flip()
 })
 
@@ -267,4 +292,90 @@ plotly_list <- lapply(plot_list, ggplotly)
 for (i in seq_along(plotly_list)) {
   print(plotly_list[[i]])
 }
+```
+
+## Document Clustering and similarity
+
+```{r}
+library(colorspace)
+library(dbscan)
+library(proxy)
+
+true_k <- 4
+
+weighted <- weightTfIdf(dtm)
+mat <- as.matrix(weighted)
+distance <- proxy::dist(mat, method = "cosine")
+```
+
+### K means
+
+```{r}
+kmeans <- kmeans(mat, true_k)
+```
+
+### Hierarchical
+
+```{r}
+hier <- hclust(distance, method = "ward.D2")
+```
+
+### Density
+
+```{r}
+db <- hdbscan(distance, minPts = 4)
+```
+
+```{r}
+master.cluster <- kmeans$cluster
+slave.hierarchical <- cutree(hier, k = true_k)
+slave.dbscan <- db$cluster
+```
+
+
+### Plots
+
+```{r}
+dec <- movies %>%
+  group_by(title) %>%
+  summarize(decade = mean(decade))
+```
+
+```{r}
+library(basicPlotteR)
+
+points <- cmdscale(distance, k = 2)
+palette <- colorspace::diverge_hcl(true_k)
+
+
+
+plot(points,
+  main = "K-Means clustering",
+  col = as.factor(master.cluster),
+  mai = c(0, 0, 0, 0),
+  mar = c(0, 0, 0, 0),
+  xaxt = "n", yaxt = "n",
+  xlab = "", ylab = ""
+)
+basicPlotteR::addTextLabels(points[, 1], points[, 2], labels = dec$decade, col.label = "purple")
+
+
+plot(points,
+  main = "Hierarchical clustering",
+  col = as.factor(slave.hierarchical),
+  mai = c(0, 0, 0, 0),
+  mar = c(0, 0, 0, 0),
+  xaxt = "n", yaxt = "n",
+  xlab = "", ylab = ""
+)
+basicPlotteR::addTextLabels(points[, 1], points[, 2], labels = dec$decade, col.label = "purple")
+plot(points,
+  main = "Density-based clustering",
+  col = as.factor(slave.dbscan),
+  mai = c(0, 0, 0, 0),
+  mar = c(0, 0, 0, 0),
+  xaxt = "n", yaxt = "n",
+  xlab = "", ylab = ""
+)
+basicPlotteR::addTextLabels(points[, 1], points[, 2], labels = dec$decade, col.label = "purple")
 ```
