@@ -332,7 +332,6 @@ slave.hierarchical <- cutree(hier, k = true_k)
 slave.dbscan <- db$cluster
 ```
 
-
 ### Plots
 
 ```{r}
