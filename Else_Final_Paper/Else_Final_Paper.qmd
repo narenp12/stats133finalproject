@@ -17,7 +17,7 @@ author:
     affiliations:
         - ref: another-u
 abstract: |
-  Romantic comedies, or “rom-coms,” have been claimed to be worse now than before. Popular newspapers claim that the genre is “dead” because of the lack of originality (The Washington Post, 2016). Is this truly the case? This project will use 30 popular rom-com movie scripts from 1980 to 2020 in an attempt to answer the question: Have romantic comedies declined in quality over time (past 40 years)? The methods employed are textual analysis, sentiment analysis, clustering, and topic modeling. These methods will help to develop a random forest model that predicts the decade in which each rom-com was published based on the original data and additional engineered features. The results show that even with LLM Integration for modeling purposes, there was no significant evidence to show a change in rom-coms over the last 40 years. Outside factors such as nostalgia, industry shifts, streaming services, and the balance of traditional romance with modern social commentary could be a reason for the perceived decline, and should be further explored. 
+  Romantic comedies, or “rom-coms,” have been claimed to be worse now than before. Popular newspapers claim that the genre is “dead” because of the lack of originality (The Washington Post, @romcomdead) in modern movies. Is this truly the case? This project will use 30 popular rom-com movie scripts from 1980 to the 2010s in an attempt to answer the question: Have romantic comedies declined in quality over time (past 40 years)? The methods employed are textual analysis, sentiment analysis, clustering, and topic modeling. These methods will help to develop a random forest model that predicts the decade in which each rom-com was published based on the original data and additional engineered features. The results show that even with LLM Integration for modeling purposes, there was no significant evidence to show a change in rom-coms over the last 40 years. Outside factors such as nostalgia, industry shifts, streaming services, and the balance of traditional romance with modern social commentary could be a reason for the perceived decline, and should be further explored. 
 keywords: 
   - topic modeling
   - LLM integration
@@ -61,7 +61,13 @@ We evaluate each of our text mining techniques based on a number of factors, mai
 
 ## Data Creation
 
+To create our dataset, we collected 30 rom-com scripts from 1980 to 2020,  using a random number generator to select from  rottentomatoes.com’s list of the 200 most popular dramas. We then downloaded each as a pdf from scripts.com and combined them into a single csv file.
+
 ## Data Preprocessing
+
+Our initial data had the following format: three columns, “title”, “year”, and “text”, with thirty rows, one for each rom-com. To process our data, we first used a dataset from the genderdata package to remove common English names. Next, we applied basic text-cleaning techniques using the R’s tm library, removing punctuation and special characters, setting all the words to lowercase, removing English stopwords, and deleting whitespace. We also performed some specific transformations such as removing month, year, day and website domains like “scripts.com”. Then we stemmed all the words and removed sparse terms. 
+
+After, we added a decade column and converted our data into two essentially useful formats: tidy format with a count column, using unnest_tokens and count(), and dtm/dfm with cast_dtm/cast_dfm. 
 
 # Results
 
@@ -73,17 +79,25 @@ The first step to our EDA was exploring how the lexical diversity of rom-coms va
 
 A cursory inspection shows that the 1990s have a higher mean TTR while the 2000s have a lower mean TTR relative to the 80s and 2010s. To test whether the apparent difference in TTR is statistically significant, we decided to create a simple linear model.
 
-![Linear Model and Assumption Tests](images/Screenshot 2025-03-21 at 16-45-10 STATS 133 Are Romcoms Dead - Google Slides.png)
+![Linear Model and Assumption Tests](images/Screenshot%202025-03-21%20at%2016-45-10%20STATS%20133%20Are%20Romcoms%20Dead%20-%20Google%20Slides.png)
 
 To test whether the apparent difference in TTR is statistically significant, we decided to create a simple linear model. Our model followed the linearity assumptions, and none of the predictors were significant, with the overall model itself not being significant. This indicates that each decade’s Mean TTR are actually not statistically different. We can interpret this as meaning there is no real change in the lexical diversity across decades.
 
 Next, we looked at the most frequent words in each decade, creating barplots and word clouds for each decade.
 
-**Insert word cloud figure here**
+![Wordclouds by decade](images/wc4-imageonline.co-merged-imageonline.co-merged.png)
 
 There “I’m” is the most common word in all of the decades, followed by “yeah” (in all except the 90s). Other shared common words include really, time, day, night, talk, and gonna. This overlap of the most common words in each decade supports the findings from lexical diversity: so far, despite being from different eras, it seems that the language of the rom-coms appears to remain very similar.
 
-**Insert bigrams and trigrams here** and also include text explanation of what they mean
+![Word co-occurrence plots by decade](images/co4-imageonline.co-merged-imageonline.co-merged.png)
+
+Additionally, we explored word-co occurrences by decade, using widyr’s pairwise_count() function to look at the most common word pairs. The resulting graphs were very similar, indicating results similar to with single words: each decade has nearly the same set of words as one another and the patterns are extremely similar. This further suggests that each decade does not vary greatly in textual content.
+
+![Bigrams by decade](images/bi4-imageonline.co-merged(1)-imageonline.co-merged(1).png)
+
+![Trigrams by decade](images/tri4-imageonline.co-merged-imageonline.co-merged.png)
+
+Bigram and trigram analysis yielded different results. Representing the graphs of the pairwise likelihoods of words within each decade, capturing which words are likely to appear sequentially, we do observe starkly different patterns between decades. From this we can gather that there is definitely variety in word sequences (or how words are used together) between decades, though the overall words used (that we saw with TTR, common words, and co-occurrences) are not as diverse. 
 
 ## Sentiment Analysis
 
