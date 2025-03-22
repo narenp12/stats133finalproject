@@ -1,124 +1,152 @@
 ---
-title: Short Paper
-subtitle: A Short Subtitle
+title: Are Rom-Coms Dead?
+subtitle: A comprehensive analysis of romantic comedies spanning from the 1980s to the 2010s
 author:
-  - name: Alice Anonymous
-    email: alice@example.com
-    affiliations: 
-        - id: some-tech
-          name: Some Institute of Technology
-          department: Department Name
-          address: Street Address
-          city: City
-          state: State
-          postal-code: Postal Code
-    attributes:
-        corresponding: true
-    note: This is the first author footnote.
-  - name: Bob Security
-    email: bob@example.com
+  - name: Naren Prakash
     affiliations:
         - id: another-u
-          name: Another University
-          department: Department Name
-          address: Street Address
-          city: City
-          state: State
-          postal-code: Postal Code
-    note: |
-      Another author footnote, this is a very long footnote and it should be a really long footnote. But this footnote is not yet sufficiently long enough to make two lines of footnote text.
-  - name: Cat Memes
-    email: cat@example.com
+          name: University of California, Los Angeles
+          department: Department of Statistics and Data Science
+          city: Los Angeles
+          state: California
+          postal-code: 90024
+  - name: Fathima Shaikh
     affiliations:
         - ref: another-u
-    note: Yet another author footnote.
-  - name: Derek Zoolander
-    email: derek@example.com
-    affilations:
-        - ref: some-tech
+  - name: Caleb Williams
+    affiliations:
+        - ref: another-u
 abstract: |
-  This is the abstract. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum augue turpis, dictum non malesuada a, volutpat eget velit. Nam placerat turpis purus, eu tristique ex tincidunt et. Mauris sed augue eget turpis ultrices tincidunt. Sed et mi in leo porta egestas. Aliquam non laoreet velit. Nunc quis ex vitae eros aliquet auctor nec ac libero. Duis laoreet sapien eu mi luctus, in bibendum leo molestie. Sed hendrerit diam diam, ac dapibus nisl volutpat vitae. Aliquam bibendum varius libero, eu efficitur justo rutrum at. Sed at tempus elit.
+  Romantic comedies, or “rom-coms,” have been claimed to be worse now than before. Popular newspapers claim that the genre is “dead” because of the lack of originality (The Washington Post, 2016). Is this truly the case? This project will use 30 popular rom-com movie scripts from 1980 to 2020 in an attempt to answer the question: Have romantic comedies declined in quality over time (past 40 years)? The methods employed are textual analysis, sentiment analysis, clustering, and topic modeling. These methods will help to develop a random forest model that predicts the decade in which each rom-com was published based on the original data and additional engineered features. The results show that even with LLM Integration for modeling purposes, there was no significant evidence to show a change in rom-coms over the last 40 years. Outside factors such as nostalgia, industry shifts, streaming services, and the balance of traditional romance with modern social commentary could be a reason for the perceived decline, and should be further explored. 
 keywords: 
-  - keyword1
-  - keyword2
+  - topic modeling
+  - LLM integration
+  - sentiment analysis
+  - correlation analysis
 date: last-modified
 bibliography: bibliography.bib
 format:
   elsevier-pdf:
     keep-tex: true
     journal:
-      name: Journal Name
+      name: Introduction to Text Mining Using R
       formatting: preprint
       # model: 3p # Don't set a model with preprint
       cite-style: authoryear
 ---
 
-Please make sure that your manuscript follows the guidelines in the 
-Guide for Authors of the relevant journal. It is not necessary to 
-typeset your manuscript in exactly the same way as an article, 
-unless you are submitting to a camera-ready copy (CRC) journal.
+# Introduction
 
-For detailed instructions regarding the elsevier article class, see   <https://www.elsevier.com/authors/policies-and-guidelines/latex-instructions>
+Rom-coms have captivated audiences for decades, becoming a staple in popular cinema. However, in recent years, critics and casual viewers alike have argued that the quality of rom-coms has declined, referencing factors such as weaker storytelling and formulaic plots. Additionally, many claim that recent rom-coms are more predictable and cliche than those from years before. This project explores whether or not rom-coms have indeed declined in quality, using text mining techniques such as sentiment extraction, correlation analysis, and topic modeling to examine transcripts of popular movies since 1980. Through this approach, this paper aims to determine whether the perceived decline in rom-com quality is supported by measurable changes in film content, or if it is simply a result of changing public perceptions such as the effect of nostalgia.
 
-# Bibliography styles
+# Literature Review
 
-Here are two sample references:  @Feynman1963118 @Dirac1953888.
+Movie critics argue that Romantic Comedy quality has declined in recent years. Articles such as @romcomdead claim that modern rom-coms lack originality and charm. There are other reasons as to why people claim a decline in rom-coms. @romcombad suggests that changes in audience preferences have contributed to the decline. @downfallromcom notes that the genre peaked in the 1990s and early 2000s but has since declined, possibly due to industry shifts, streaming services, and struggling to balance traditional romance with modern social commentary. This report examines claims such as a “lack of originality and charm” from The Washington Post by using text mining techniques such as textual analysis, topic modeling, and sentiment analysis to determine whether rom-com scripts have changed over the past four decades.
 
-With this template using elsevier class, natbib will be used. Three bibliographic style ﬁles (*.bst) are provided and their use controled by `cite-style` option: 
+# Methods
 
-- `citestyle: number` (default)  will use `elsarticle-num.bst` - can be used for the numbered scheme
-- `citestyle: numbername` will use `elsarticle-num-names.bst` - can be used for numbered with new options of natbib.sty
-- `citestyle: authoryear` will use `elsarticle-harv.bst` — can be used for author year scheme
+The methods used in this project aspire to quantify how rom-coms have changed over time through different metrics. This includes using Type-Token Ratio (TTR) to measure the diversity of a script’s vocabulary, word clouds and word co-occurrences to compare popular word usage, and bigrams and trigrams to explore correlations between common groups of words.
 
-This `citestyle` will insert the right `.bst` and set the correct `classoption` for `elsarticle` document class.
+Another type of method used will be sentiment analysis, specifically using lexicons like AFINN and NRC to analyze how each script’s tone changes over time. This will help to see if romantic comedies have a more positive or more negative sentiment since 1980, and the common emotions found in rom-coms.
 
-Using `natbiboptions` variable in YAML header, you can set more options for `natbib` itself . Example 
+Also, this project will employ Topic Modeling through Latent Dirichlet Allocation (LDA), to find recurring topics in the scripts. LDA will contribute to exploring whether or not rom-com themes have become more formulaic in the past 40 years.
 
-```yaml
-natbiboptions: longnamesfirst,angle,semicolon
-```
+Lastly, after important features have been engineered, a Random Forest model will help illustrate the similarity or dissimilarity of romantic comedies across time periods. In forming a classification model, the aim is to evaluate if scripts from different time periods are truly different in some aspect or if there is another factor not considered in this paper. Following the Random Forest model, we fine tune a DistilBERT model from HuggingFace with a supplemental data set of 2,859 other movie scripts, hoping to boost classification accuracy by leveraging the capabilities of the LLM to predict the decade of a given movie.
 
-## Using CSL 
+# Evaluation
 
-If `cite-method` is set to `citeproc` in `elsevier_article()`, then pandoc is used for citations instead of `natbib`. In this case, the `csl` option is used to format the references. By default, this template will provide an appropriate style, but alternative `csl` files are available from <https://www.zotero.org/styles?q=elsevier>. These can be downloaded
-and stored locally, or the url can be used as in the example header.
+We evaluate each of our text mining techniques based on a number of factors, mainly with numeric measures such as p values, loss functions, and accuracy metrics. However, some cases required more subjective measures of evaluation.
 
-# Equations
+# Data
 
-Here is an equation:
-$$ 
-  f_{X}(x) = \left(\frac{\alpha}{\beta}\right)
-  \left(\frac{x}{\beta}\right)^{\alpha-1}
-  e^{-\left(\frac{x}{\beta}\right)^{\alpha}}; 
-  \alpha,\beta,x > 0 .
-$$
+## Data Creation
 
-Inline equations work as well: $\sum_{i = 2}^\infty\{\alpha_i^\beta\}$
+## Data Preprocessing
 
-# Figures and tables
+# Results
 
-@fig-meaningless is generated using an R chunk.
+## Exploratory Data Analysis and Textual Analysis
 
-```{r}
-#| label: fig-meaningless
-#| fig-cap: A meaningless scatterplot
-#| fig-width: 5
-#| fig-height: 5
-#| fig-align: center
-#| out-width: 50%
-#| echo: false
-plot(runif(25), runif(25))
-```
+The first step to our EDA was exploring how the lexical diversity of rom-coms varied across decades. Using quanteda’s textstat_lexdiv() function on our DFM, we first calculated the TTR for each rom-com. Then we calculated and plotted the mean TTR for each decade.
 
-# Tables coming from R
+![Mean Type-Token Ratio by Decade](images/mean_ttr.png)
 
-Tables can also be generated using R chunks, as shown in @tbl-simple example.
+A cursory inspection shows that the 1990s have a higher mean TTR while the 2000s have a lower mean TTR relative to the 80s and 2010s. To test whether the apparent difference in TTR is statistically significant, we decided to create a simple linear model.
 
-```{r}
-#| label: tbl-simple
-#| tbl-cap: Caption centered above table
-#| echo: true
-knitr::kable(head(mtcars)[,1:4])
-```
+![Linear Model and Assumption Tests](images/Screenshot 2025-03-21 at 16-45-10 STATS 133 Are Romcoms Dead - Google Slides.png)
 
-# References {-}
+To test whether the apparent difference in TTR is statistically significant, we decided to create a simple linear model. Our model followed the linearity assumptions, and none of the predictors were significant, with the overall model itself not being significant. This indicates that each decade’s Mean TTR are actually not statistically different. We can interpret this as meaning there is no real change in the lexical diversity across decades.
+
+Next, we looked at the most frequent words in each decade, creating barplots and word clouds for each decade.
+
+**Insert word cloud figure here**
+
+There “I’m” is the most common word in all of the decades, followed by “yeah” (in all except the 90s). Other shared common words include really, time, day, night, talk, and gonna. This overlap of the most common words in each decade supports the findings from lexical diversity: so far, despite being from different eras, it seems that the language of the rom-coms appears to remain very similar.
+
+**Insert bigrams and trigrams here** and also include text explanation of what they mean
+
+## Sentiment Analysis
+
+The next technique applied was sentiment analysis, using @pang2008opinion as a reference.
+
+The AFINN Sentiment Score was employed for this dataset, which is a lexicon that gives a score ranging from -5 to 5 for each word. Negative scores indicate a negative sentiment while positive scores indicate a positive sentiment. The graph below reveals the average AFINN sentiment score per movie and by decade. All average scores are negative, indicating there are more negatively rated words than positive in each movie. Also, the scores vary greatly per movie. However, each decade is relatively similar at around -0.5, except for the 2000s, which is at -0.61. 
+
+![Average AFINN scores for Movie and Decade](images/avg_afinn-imageonline.co-merged.png)
+
+Further analysis was done where the AFINN sentiment score was again organized by movie and by decade. However, the scores were weighted by TF-IDF, which evaluates how important a word is. Words with a higher TF-IDF mean that the term is frequent in the specific document and rare across the collection of documents. In the graph below, it is interesting to note that by decade, the scores are vastly different when compared to the graph above. When weighted by TF-IDF, the 1990s had the least negative score, and the 2010s had the most negative score. When only taking the average score, the 1990s and 2010s were very similar. This indicates that in these 2 decades, frequent and important words impact the overall movie sentiment greatly.
+
+![Average AFINN scores weighted by TF-IDF for Movies and Decade](images/decavgtdfif-imageonline.co-merged.png)
+
+Lastly, the question of which emotions dominate was answered with the NRC Lexicon. It associates words with 8 basic emotions. The bar graph below reveals that, when words are weighted by TF-IDF, fear and trust are the 2 most common emotions overall and by decade, with trust always being the highest. This makes sense for romantic comedies, and most love stories. This analysis did not reveal a significant change throughout the decades. However, similarly to the AFINN sentiment score when weighted by TF-IDF, the 1990s and 2010s show higher scores than the other decades. This may mean that in these 2 decades, the important and frequent words impact words of all emotions more than in the 1980s and 2000s.
+
+![Emotional Distribution by Movie and Decade](images/nrc2-imageonline.co-merged.png)
+
+## Clustering
+
+K-means, Density-based, and Hierarchical clustering were all evaluated on this dataset. While it is easy to see 3 separate groups of clusters in all graphs, there are no patterns related to the decade group, meaning that the movies are not able to be separated by decade. The projected 2 dimensions indicate some kind of similarity amongst those in the same cluster, but the decade labels are far from corresponding. This indicates that though there may be factors that are able to cluster the movies by similarity, these factors are not indicative of and do not have any relation with the decade of movie production.
+
+![Clustering Movies](images/hier-imageonline.co-merged.png)
+
+## Topic Modeling
+
+In order to see if the different decade groups could be differentiated by topics, Latent Dirichlet Allocation (LDA) from @ldapaper was utilized with a k value of 4. This essentially allocates each topic to one of the 4 different movie decade groups. The most common words in each of these groups are seen below.
+
+![Most frequent terms by topic group](images/freqLDA.png)
+
+From this alone, the words amongst different topics remain similar and seem to indicate that the topics are not well separated. This is further explored with a box plot of the gamma values from the LDA.
+
+![Gamma boxplot by topic](images/boxplottopic.png)
+
+The boxplot reinforces that the topic modeling procedure was unable to produce meaningful topic separation at the given k value of 4. Each plot by decade group has multiple topic groups with large gamma values, indicating that there is no direct relationship between a single topic group and a single decade value. With this knowledge, we then attempt to find the true topic separation within the movie data.
+
+![LDA tuning and topic designation](images/lda6-imageonline.co-merged.png)
+
+Using the metrics Griffiths2004 and CaoJuan2009 from @ldatuning as well as local experimentation, the chosen k value was 6. Once more, from looking at the top terms, we can see similarity between topic groups. However, there is a notable difference in unique terms for each topic group, indicating that the topics are separated more here. For these 6 topics, we then look at the document association with each of the 6 topics.
+
+## LLM Integration and Prediction
+
+Before this, we prompt ChatGPT to label each topic based on its most frequent terms. The produced labels are: Golf Game, Social Gathering, Emotional Conversation, Home Interaction, Everyday Moments, Christmas Reflection.
+
+![Gamma boxplots per labeled topic](images/top_topics_combined.png)
+
+From these gamma boxplots, we can see the only topic with association with a majority of the documents is the emotional conversation topic. Thus, the documents themselves do not have an association with any other specific topics.
+
+With all of this, we aim to create a prediction model to classify the decade of a movie based on its text content as features. In order to do this, we incorporate two different methods. First, we create a more traditional model with a Random Forest classifier. Then we use a fine-tuned LLM to predict the decade label, using supplemental data for the fine-tuning process and using two different ways of loading in our data we want to make predictions on.
+
+After using a 70-30 split between training and test data for the Random Forest, we make our train and test predictions and produce the following confusion matrices as well as a variable importance plot for the model itself.
+
+![Random Forest Confusion Matrices and Variable Importance](images/rf_imp-imageonline.co-merged.png)
+
+The training confusion matrix reports an accuracy of 100%, but the testing confusion matrix shows an accuracy of only 11.11%. This disparity in prediction indicates that the decade cannot be easily predicted for a movie when using its text as the features. In this test set, only one predicted case was classified correctly. As a result, we turn to the LLM in order to use its contextual understanding and pattern recognition capabilities to improve the accuracy of our decade class predictions. 
+
+We use two methods of loading in the training data after the fine-tuning process has been completed. We first use chunking and weighting, which breaks up each movie’s text into chunks of 512 tokens and predicts the class of each chunk before using a weighted average to assign an overall class to a movie based on its chunks. The second method used is that of truncation, in which the first 512 tokens are given for each movie and classification is based on that input. The confusion matrices from prediction are given below.
+
+![LLM prediction confusion matrices](images/trunc_llm-imageonline.co-merged.png)
+
+As shown in each plot, both methods result in a test accuracy of 20%. However, the chunking and weighting approach predicts label 2, corresponding to the 2000s decade, for each movie. On the other hand, the truncation approach gives variety in prediction, though ultimately only resulting in the same prediction accuracy. Of the two, the truncation based prediction is the most promising. Ultimately, we conclude that even with the utilization of LLMs, the decade of the movie is hard to discern from its text data.
+
+# Conclusion
+
+Through the use of correlation analysis, sentiment analysis, clustering, topic modeling, and various forms of prediction, we uncovered insights about the movie data that allowed us to learn more about each decade of romantic comedies. Despite this, the additional data was not enough to reliably differentiate movies across different eras. Thus, in terms of numeric quantification, we were unable to uncover a significant difference between the romantic comedies across the 4 eras. These findings question the social perception of a decline in romantic comedies, as the methods utilized in this paper present a story of consistency and similarity. On the other hand, it should be noted that perhaps the decline is a result of other processes and concepts not covered in this analysis. Further work toward uncovering the reasoning behind this perception may want to approach the questions from a psychological point of view or consider other factors, such as the acting of a movie, that were not considered in this process.
+
+# References {.unnumbered}
